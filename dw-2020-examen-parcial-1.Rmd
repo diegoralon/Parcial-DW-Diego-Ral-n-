@@ -1,0 +1,152 @@
+---
+title: "dw-2020-parcial-1"
+author: "Tepi"
+date: "9/3/2020"
+output: rmarkdown::github_document 
+always_allow_html: true
+
+
+---
+
+# Examen parcial
+
+Indicaciones generales:
+
+* Usted tiene el período de la clase para resolver el examen parcial.
+* La entrega del parcial, al igual que las tareas, es por medio de su cuenta de github, pegando el link en el portal de MiU.
+
+
+* Pueden hacer uso del material del curso e internet (stackoverflow, etc.). Sin embargo, si encontramos algún indicio de copia, se anulará el exámen para los estudiantes involucrados. Por lo tanto, aconsejamos no compartir las agregaciones que generen. 
+
+## Sección I: Preguntas teóricas.
+
+* Existen 10 preguntas directas en este Rmarkdown, de las cuales usted deberá responder 5. Las 5 a responder estarán determinadas por un muestreo aleatorio basado en su número de carné.
+
+* Ingrese su número de carné en  `set.seed()` y corra el chunk de R para determinar cuáles preguntas debe responder.
+
+
+```{r, echo=TRUE, cache=TRUE}
+
+#set.seed("20180210") 
+v<- 1:10
+preguntas <-sort(sample(v, size = 5, replace = FALSE ))
+
+paste0("Mis preguntas a resolver son: ",paste0(preguntas,collapse = ", "))
+
+```
+
+
+### Listado de preguntas teóricas
+
+* Las preguntas que me tocaron son 2,5,8,9,10 cuando le doy knit salen otras en el Markdown pero estas estan en el codigo. Las preguntas estan resueltas abajo de las indicadas
+
+1. Para las siguientes sentencias de `base R`, liste su contraparte de `dplyr`:
+    * `str()`
+    * `df[,c("a","b")]`
+    * `names(df)[4] <- "new_name"` donde la posición 4 corresponde a la variable `old_name`
+    * `df[df$variable == "valor",]`
+    
+    
+2. Al momento de filtrar en SQL, ¿cuál keyword cumple las mismas funciones que el keyword `OR`  para filtrar uno o más elementos una misma columna?
+
+La Keyword que funciona igual que OR la cual nos permite filtrar dado un condición o la otra es WHERE AND la cual permite al igual que el OR filtrar dentro de multiples condiciones. 
+
+
+3. ¿Por qué en R utilizamos funciones de la familia apply (lapply,vapply) en lugar de utilizar ciclos?
+4. ¿Cuál es la diferencia entre utilizar `==` y `=` en R?
+
+5. ¿Cuál es la forma correcta de cargar un archivo de texto donde el delimitador es `:`?
+
+La forma correcta de cargar un archivo donde mi limitador sea : es con esta formula read_delim y dentro del parametro delim = colocamos ":" y esto lo que le dice a la función es que el delimitador que se uso en la data es : y a la hora de cargar el archivo este va tomar : como delimitador
+
+
+6. ¿Qué es un vector y en qué se diferencia en una lista en R?
+7. ¿Qué pasa si quiero agregar una nueva categoría a un factor que no se encuentra en los niveles existentes?
+
+8. Si en un dataframe, a una variable de tipo `factor` le agrego un nuevo elemento que *no se encuentra en los niveles existentes*, ¿cuál sería el resultado esperado y por qué?
+    * El nuevo elemento
+    * `NA`
+
+Esto tomaria como resultado el 'NA' ya que si el nuevo elemento que estoy agregando no se encuentra dentro del mismo nivel, r no podria reconocer el comando que estoy mandando por lo cual nos nos tirara un valor, porque la agregación no la podria realizar. entonces el resultado seria 'NA'  
+    
+9. En SQL, ¿para qué utilizamos el keyword `HAVING`?
+
+HAVING lo utilizamos al nosotros querer trabajar sobre un agregación ( Un GROUP BY) ya que en este caso WHERE no funciona. Entonces si queremos hacer un WHERE dentro de una agregación debemos usar el keyword HAVING y no WHERE. 
+
+
+10. Si quiero obtener como resultado las filas de la tabla A que no se encuentran en la tabla B, ¿cómo debería de completar la siguiente sentencia de SQL?
+
+    * SELECT * FROM A KEY B ON A.KEY = B.KEY WHERE A.KEY <> B.KEY
+  
+Extra: ¿Cuántos posibles exámenes de 5 preguntas se pueden realizar utilizando como banco las diez acá presentadas?
+(responder con código de R.)
+
+
+## Sección II Preguntas prácticas.
+
+
+* Conteste las siguientes preguntas utilizando sus conocimientos de R. Adjunte el código que utilizó para llegar a sus conclusiones en un chunk del markdown.
+
+A. De los clientes que están en más de un país,¿cuál cree que es el más rentable y por qué?
+
+B. Estrategia de negocio ha decidido que ya no operará en aquellos territorios cuyas pérdidas sean "considerables". Bajo su criterio, ¿cuáles son estos territorios y por qué ya no debemos operar ahí?
+
+
+
+
+
+
+
+
+### II. Preguntas Prácticas
+
+
+## A
+```{r}
+library(dplyr)
+library(tidyverse)
+library(highcharter)
+parcial_anonimo <- read_rds("parcial_anonimo.rds")
+```
+
+
+```{r, cache=TRUE}
+# Que clientes estan en más de un país 
+parcial_anonimo %>% 
+  select(Pais,Cliente,Venta) %>% 
+  group_by(Cliente) %>% 
+  filter(Pais > 1) %>% 
+  summarise(clientesxpais = sum(Venta)) %>% 
+  arrange(desc(clientesxpais)) %>% 
+  filter(clientesxpais > 80000) %>% 
+   hchart("column",hcaes(x = Cliente, y = clientesxpais)) %>% 
+  hc_title(text = "<b>Mejores Clintes en más de un país<b>") 
+
+# Primero hice un Group By dentro de mis clientes, luego filtre que esos clientes estuiveran en más de 1 pais, para despues decirle que me sume todas las ventas que he realizado con ellos en sus distintos países. Despues le pedi que me lo ordenera en orde descendiente para reviasar los datos. 
+# Para poder verlo graficamente filtre mi resultado en arriba de 80000 para visualizarlo mejor y despues realice la gráfica que se encuentra a continuación 
+# En la gráfica me demiestras los clientes que más me facturas en más de un país. 
+
+```
+
+
+
+
+## B
+
+```{r, cache=TRUE}
+parcial_anonimo %>% 
+  select(Territorio,Venta) %>% 
+  group_by(Territorio) %>%
+  filter(Venta < -1) %>% 
+  summarise(perdidas = n()) %>% 
+  arrange(desc(perdidas)) %>% 
+  filter(perdidas > 100) %>% 
+  hchart("column",hcaes(x = Territorio, y = perdidas)) %>% 
+  hc_title(text = "<b>Territorios con más perdidas<b>")
+  
+# Primero lo que hice fue agrupar por territorio, despues a ese territorio le puse un filtro que sus ventas fuerna < -1 para quedarme solo con las perdidas. Despues hice un conteo de perdidas por territorio. Lo ordene de manera descendiente luego por suposición puse un número de 100 perdidas en conteo como límite para graficar 
+# En los países que se presentan en la gráfica deberiamos de considerar salir de operaciones porque tienen más de 100 operaciones por perdida, el más alto siendo de 537, por lo que considero importante remplantearse las actividades en esto países. 
+
+
+```
+
